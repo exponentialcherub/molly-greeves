@@ -446,6 +446,15 @@ ul {
   font-style: italic;
 }
 
+.preview-image {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  border-radius: 4px;
+  margin-bottom: 14px;
+  display: block;
+}
+
 .preview-pub {
   font-size: 0.62rem;
   font-weight: 600;

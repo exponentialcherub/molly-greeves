@@ -9,6 +9,7 @@
   const dateEl       = document.getElementById('preview-date-el');
   const excerptEl    = document.getElementById('preview-excerpt-el');
   const ctaEl        = document.getElementById('preview-cta-el');
+  const imageEl      = document.getElementById('preview-image-el');
 
   // ── Render articles from content.json ─────────────────────────
   function buildItem(article) {
@@ -21,6 +22,7 @@
     li.dataset.previewUrl     = article.url         || '#!';
     if (article.badge)     li.dataset.previewBadge     = article.badge;
     if (article.badgeType) li.dataset.previewBadgeType = article.badgeType;
+    if (article.image)     li.dataset.previewImage     = article.image;
 
     const meta = document.createElement('div');
     meta.className = 'item-meta';
@@ -92,9 +94,20 @@
     const url       = item.dataset.previewUrl     || '#!';
     const badge     = item.dataset.previewBadge   || '';
     const badgeType = item.dataset.previewBadgeType || '';
+    const image     = item.dataset.previewImage   || '';
 
     const existingBadge = document.getElementById('preview-badge-el');
     if (existingBadge) existingBadge.remove();
+
+    if (image) {
+      imageEl.src = image;
+      imageEl.alt = title;
+      imageEl.style.display = 'block';
+    } else {
+      imageEl.src = '';
+      imageEl.alt = '';
+      imageEl.style.display = 'none';
+    }
 
     pubEl.textContent   = pub;
     titleEl.textContent = title;
@@ -126,6 +139,9 @@
     previewInner.classList.remove('showing-content');
     const existingBadge = document.getElementById('preview-badge-el');
     if (existingBadge) existingBadge.remove();
+    imageEl.src = '';
+    imageEl.alt = '';
+    imageEl.style.display = 'none';
   }
 
   // ── Event delegation: hover over list items ────────────────────
