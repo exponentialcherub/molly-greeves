@@ -134,6 +134,17 @@
     if (item) populatePreview(item);
   });
 
+  colList.addEventListener('click', e => {
+    const item = e.target.closest('.list-item');
+    if (!item) return;
+    const colPreview = document.querySelector('.col-preview');
+    // If preview pane is hidden (mobile), navigate directly
+    if (getComputedStyle(colPreview).display === 'none') {
+      const url = item.dataset.previewUrl;
+      if (url && url !== '#!') window.open(url, '_blank', 'noopener,noreferrer');
+    }
+  });
+
   mainLayout.addEventListener('mouseleave', showDefault);
 
   document.addEventListener('click', e => {
