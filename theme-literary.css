@@ -108,12 +108,12 @@ ul {
 /* Awards use terracotta — consistent signal for achievement/recognition */
 .award-chip {
   display: inline-block;
-  font-size: 0.6rem;
-  font-weight: 500;
-  letter-spacing: 0.05em;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
   color: var(--accent-warm);
-  border: 1px solid rgba(139, 74, 43, 0.4);
+  border: 1.5px solid rgba(139, 74, 43, 0.5);
   border-radius: 0;
   padding: 3px 9px;
   white-space: nowrap;
@@ -696,10 +696,132 @@ ul {
     background: rgba(74, 103, 65, 0.06);
   }
 
-  /* No selected indicator on mobile — no preview pane to connect it to */
+  /* Selected state restored — connects visually to the bottom sheet */
   .list-item.selected {
-    box-shadow: none;
-    background: transparent;
+    background: rgba(74, 103, 65, 0.06);
+    box-shadow: inset 3px 0 0 var(--accent);
+    padding-left: 6px;
+    margin-left: -6px;
+  }
+
+  /* ── Social icons: larger touch targets on mobile ──────────── */
+  .social-icon {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+/* ── Mobile sheet (≤900px) ───────────────────────────────────── */
+.mobile-sheet-overlay,
+.mobile-sheet {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .mobile-sheet-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(30, 26, 20, 0);
+    z-index: 100;
+    pointer-events: none;
+    transition: background 0.3s ease;
+  }
+
+  .mobile-sheet-overlay.visible {
+    background: rgba(30, 26, 20, 0.4);
+    pointer-events: auto;
+  }
+
+  .mobile-sheet {
+    display: block;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--preview-bg);
+    border-top: 2px solid var(--text);
+    box-shadow: 0 -4px 0 var(--border);
+    z-index: 101;
+    transform: translateY(100%);
+    transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1);
+    max-height: 72vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  .mobile-sheet.visible {
+    transform: translateY(0);
+  }
+
+  .mobile-sheet-handle {
+    width: 36px;
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    margin: 14px auto 0;
+  }
+
+  .mobile-sheet-inner {
+    padding: 18px 22px calc(22px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .mobile-sheet-pub {
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+
+  .mobile-sheet-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    font-style: italic;
+    line-height: 1.3;
+    color: var(--text);
+    margin-bottom: 8px;
+    letter-spacing: -0.01em;
+  }
+
+  .mobile-sheet-date {
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+
+  .mobile-sheet-excerpt {
+    font-size: 0.875rem;
+    color: var(--muted);
+    line-height: 1.8;
+    margin-bottom: 22px;
+  }
+
+  .mobile-sheet-excerpt:empty { display: none; }
+
+  .mobile-sheet-cta {
+    display: block;
+    background: var(--accent);
+    color: var(--bg);
+    text-align: center;
+    padding: 14px 20px;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    transition: opacity 0.15s;
+  }
+
+  .mobile-sheet-cta:active { opacity: 0.8; }
+
+  .mobile-sheet-cta:focus-visible {
+    outline: 2px solid var(--accent-warm);
+    outline-offset: 2px;
   }
 }
 

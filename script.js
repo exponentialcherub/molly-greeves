@@ -13,6 +13,55 @@
 
   let selectedItem = null;
 
+  // ── Mobile sheet ───────────────────────────────────────────────
+  const sheetEl      = document.getElementById('mobile-sheet');
+  const sheetOverlay = document.getElementById('mobile-sheet-overlay');
+  const sheetPubEl   = document.getElementById('sheet-pub-el');
+  const sheetTitleEl = document.getElementById('sheet-title-el');
+  const sheetDateEl  = document.getElementById('sheet-date-el');
+  const sheetExcerpt = document.getElementById('sheet-excerpt-el');
+  const sheetCtaEl   = document.getElementById('sheet-cta-el');
+
+  function isMobile() {
+    const colPreview = document.querySelector('.col-preview');
+    return colPreview && getComputedStyle(colPreview).display === 'none';
+  }
+
+  function openSheet(item) {
+    sheetPubEl.textContent   = item.dataset.previewPub   || '';
+    sheetTitleEl.textContent = item.dataset.previewTitle || '';
+    sheetDateEl.textContent  = item.dataset.previewDate  || '';
+    sheetExcerpt.textContent = item.dataset.previewExcerpt || '';
+    sheetCtaEl.href = item.dataset.previewUrl || '#!';
+    sheetCtaEl.textContent = item.dataset.previewExcerpt
+      ? 'Read article \u2192'
+      : 'View at ' + (item.dataset.previewPub || 'publication') + ' \u2192';
+
+    sheetEl.setAttribute('aria-hidden', 'false');
+    sheetOverlay.setAttribute('aria-hidden', 'false');
+    sheetEl.classList.add('visible');
+    sheetOverlay.classList.add('visible');
+    document.body.style.overflow = 'hidden';
+
+    // Move focus into the sheet
+    sheetTitleEl.setAttribute('tabindex', '-1');
+    sheetTitleEl.focus({ preventScroll: true });
+  }
+
+  function closeSheet() {
+    sheetEl.classList.remove('visible');
+    sheetOverlay.classList.remove('visible');
+    sheetEl.setAttribute('aria-hidden', 'true');
+    sheetOverlay.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+
+  sheetOverlay.addEventListener('click', closeSheet);
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && sheetEl.classList.contains('visible')) closeSheet();
+  });
+
   // ── Render articles from content.js ───────────────────────────
   function buildItem(article) {
     const li = document.createElement('li');
@@ -187,26 +236,26 @@
   // Restore when cursor leaves the list column (moves to preview pane, info col, etc.)
   colList.addEventListener('mouseleave', restoreSelected);
 
-  // Click selects on desktop, navigates on mobile
+  // Click selects on desktop, opens sheet on mobile
   colList.addEventListener('click', e => {
     const item = e.target.closest('.list-item');
     if (!item) return;
-    const colPreview = document.querySelector('.col-preview');
-    if (getComputedStyle(colPreview).display === 'none') {
-      const url = item.dataset.previewUrl;
-      if (url && url !== '#!') window.open(url, '_blank', 'noopener,noreferrer');
+    if (isMobile()) {
+      selectItem(item);
+      openSheet(item);
     } else {
       selectItem(item);
     }
   });
 
-  // Keyboard: Enter/Space selects; focus shows preview
+  // Keyboard: Enter/Space selects; on mobile also opens sheet
   colList.addEventListener('keydown', e => {
     const item = e.target.closest('.list-item');
     if (!item) return;
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       selectItem(item);
+      if (isMobile()) openSheet(item);
     }
   });
 
