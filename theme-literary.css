@@ -650,6 +650,11 @@ ul {
     overflow: visible;
   }
 
+  .col-list,
+  .col-preview {
+    grid-row: auto;
+  }
+
   .col-info {
     display: grid;
     grid-template-columns: 100px 1fr;
