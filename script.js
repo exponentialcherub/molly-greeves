@@ -11,10 +11,13 @@
   const ctaEl        = document.getElementById('preview-cta-el');
   const imageEl      = document.getElementById('preview-image-el');
 
-  // ── Render articles from content.json ─────────────────────────
+  let selectedItem = null;
+
+  // ── Render articles from content.js ───────────────────────────
   function buildItem(article) {
     const li = document.createElement('li');
     li.className = 'list-item';
+    li.setAttribute('tabindex', '0');
     li.dataset.previewPub     = article.publication || '';
     li.dataset.previewTitle   = article.title       || '';
     li.dataset.previewDate    = article.date        || '';
@@ -66,6 +69,18 @@
 
   renderContent(CONTENT);
 
+  // ── Selection management ───────────────────────────────────────
+  function selectItem(item) {
+    if (selectedItem) selectedItem.classList.remove('selected');
+    selectedItem = item;
+    if (selectedItem) {
+      selectedItem.classList.add('selected');
+      populatePreview(selectedItem);
+    } else {
+      clearPreview();
+    }
+  }
+
   // ── Tab switching ──────────────────────────────────────────────
   document.querySelectorAll('.list-tab').forEach(tab => {
     tab.addEventListener('click', () => {
@@ -79,22 +94,25 @@
 
       tab.classList.add('active');
       tab.setAttribute('aria-selected', 'true');
-      document.getElementById('tab-' + target).classList.add('active');
+      const newList = document.getElementById('tab-' + target);
+      if (newList) newList.classList.add('active');
 
-      showDefault();
+      // Auto-select first item in new tab
+      const firstItem = newList ? newList.querySelector('.list-item') : null;
+      selectItem(firstItem || null);
     });
   });
 
   // ── Preview population ─────────────────────────────────────────
   function populatePreview(item) {
-    const pub       = item.dataset.previewPub     || '';
-    const title     = item.dataset.previewTitle   || '';
-    const date      = item.dataset.previewDate    || '';
-    const excerpt   = item.dataset.previewExcerpt || '';
-    const url       = item.dataset.previewUrl     || '#!';
-    const badge     = item.dataset.previewBadge   || '';
+    const pub       = item.dataset.previewPub      || '';
+    const title     = item.dataset.previewTitle    || '';
+    const date      = item.dataset.previewDate     || '';
+    const excerpt   = item.dataset.previewExcerpt  || '';
+    const url       = item.dataset.previewUrl      || '#!';
+    const badge     = item.dataset.previewBadge    || '';
     const badgeType = item.dataset.previewBadgeType || '';
-    const image     = item.dataset.previewImage   || '';
+    const image     = item.dataset.previewImage    || '';
 
     const existingBadge = document.getElementById('preview-badge-el');
     if (existingBadge) existingBadge.remove();
@@ -109,7 +127,7 @@
       imageEl.style.display = 'none';
     }
 
-    pubEl.textContent   = pub;
+    pubEl.textContent  = pub;
     titleEl.textContent = title;
     dateEl.textContent  = date;
 
@@ -122,20 +140,20 @@
     }
 
     if (excerpt) {
-      excerptEl.textContent  = excerpt;
+      excerptEl.textContent   = excerpt;
       excerptEl.style.display = '';
     } else {
-      excerptEl.textContent  = '';
+      excerptEl.textContent   = '';
       excerptEl.style.display = 'none';
     }
 
-    ctaEl.textContent = excerpt ? 'Read article \u2192' : 'View at ' + pub + ' \u2192';
+    ctaEl.innerHTML = (excerpt ? 'Read article' : 'View at ' + pub) + ' <span class="cta-arrow">\u2192</span>';
     ctaEl.href = url;
 
     previewInner.classList.add('showing-content');
   }
 
-  function showDefault() {
+  function clearPreview() {
     previewInner.classList.remove('showing-content');
     const existingBadge = document.getElementById('preview-badge-el');
     if (existingBadge) existingBadge.remove();
@@ -144,27 +162,81 @@
     imageEl.style.display = 'none';
   }
 
-  // ── Event delegation: hover over list items ────────────────────
+  // Restore selected item on mouse-out (or clear if nothing selected)
+  function restoreSelected() {
+    if (selectedItem) {
+      populatePreview(selectedItem);
+    } else {
+      clearPreview();
+    }
+  }
+
+  // ── Event delegation ───────────────────────────────────────────
+
+  // Hover previews without changing selection.
+  // If cursor is in the list but not over an item (gap/padding zones), restore selected.
   colList.addEventListener('mouseover', e => {
     const item = e.target.closest('.list-item');
-    if (item) populatePreview(item);
+    if (item) {
+      populatePreview(item);
+    } else {
+      restoreSelected();
+    }
   });
 
+  // Restore when cursor leaves the list column (moves to preview pane, info col, etc.)
+  colList.addEventListener('mouseleave', restoreSelected);
+
+  // Click selects on desktop, navigates on mobile
   colList.addEventListener('click', e => {
     const item = e.target.closest('.list-item');
     if (!item) return;
     const colPreview = document.querySelector('.col-preview');
-    // If preview pane is hidden (mobile), navigate directly
     if (getComputedStyle(colPreview).display === 'none') {
       const url = item.dataset.previewUrl;
       if (url && url !== '#!') window.open(url, '_blank', 'noopener,noreferrer');
+    } else {
+      selectItem(item);
     }
   });
 
-  mainLayout.addEventListener('mouseleave', showDefault);
+  // Keyboard: Enter/Space selects; focus shows preview
+  colList.addEventListener('keydown', e => {
+    const item = e.target.closest('.list-item');
+    if (!item) return;
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      selectItem(item);
+    }
+  });
+
+  colList.addEventListener('focusin', e => {
+    const item = e.target.closest('.list-item');
+    if (item) populatePreview(item);
+  });
+
+  colList.addEventListener('focusout', e => {
+    if (!colList.contains(e.relatedTarget)) {
+      restoreSelected();
+    }
+  });
+
+  // Restore selected article when cursor leaves the layout
+  mainLayout.addEventListener('mouseleave', restoreSelected);
 
   document.addEventListener('click', e => {
     const link = e.target.closest('a');
     if (link && link.getAttribute('href') === '#!') e.preventDefault();
   });
+
+  // ── Auto-select first article on load ─────────────────────────
+  const firstItem = document.querySelector('#tab-features .list-item');
+  if (firstItem) selectItem(firstItem);
+
+  // ── For curious developers ─────────────────────────────────────
+  console.log(
+    '%c Molly Greeves ',
+    'background:#4a6741;color:#f7f3ec;font-family:Georgia,serif;font-size:15px;padding:4px 12px;',
+    '\n\nAward-winning consumer & personal finance journalist.\nGet in touch: molly.greeves@the-independent.com'
+  );
 })();
