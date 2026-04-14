@@ -2,8 +2,8 @@ backend:
   name: github
   repo: exponentialcherub/molly-greeves
   branch: main
-  base_url: https://api.netlify.com
-  site_domain: jade-griffin-c313bf.netlify.app
+  base_url: https://jade-griffin-c313bf.netlify.app
+  auth_endpoint: api/auth
 
 media_folder: "."
 public_folder: "."
