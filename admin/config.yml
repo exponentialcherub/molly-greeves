@@ -1,0 +1,37 @@
+backend:
+  name: github
+  repo: exponentialcherub/molly-greeves
+  branch: main
+  base_url: https://api.netlify.com
+
+media_folder: "."
+public_folder: "."
+
+collections:
+  - name: "site_content"
+    label: "Site Content"
+    files:
+      - label: "Articles"
+        name: "content"
+        file: "content.json"
+        fields:
+          - label: "Investigations"
+            name: "investigations"
+            widget: "list"
+            fields: &article_fields
+              - { label: "Publication", name: "publication", widget: "string" }
+              - { label: "Title", name: "title", widget: "string" }
+              - { label: "Date", name: "date", widget: "string", hint: "e.g. 6 Mar 2026" }
+              - { label: "URL", name: "url", widget: "string" }
+              - { label: "Image URL", name: "image", widget: "string", required: false }
+              - { label: "Excerpt", name: "excerpt", widget: "text", required: false }
+              - { label: "Badge label", name: "badge", widget: "string", required: false, hint: "e.g. Investigation or Campaign" }
+              - { label: "Badge type", name: "badgeType", widget: "select", required: false, options: ["investigation", "campaign"] }
+          - label: "Features"
+            name: "features"
+            widget: "list"
+            fields: *article_fields
+          - label: "News"
+            name: "news"
+            widget: "list"
+            fields: *article_fields
