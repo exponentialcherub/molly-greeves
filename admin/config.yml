@@ -3,6 +3,7 @@ backend:
   repo: exponentialcherub/molly-greeves
   branch: main
   base_url: https://api.netlify.com
+  site_domain: jade-griffin-c313bf.netlify.app
 
 media_folder: "."
 public_folder: "."
