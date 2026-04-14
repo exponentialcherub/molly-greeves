@@ -116,7 +116,10 @@
     });
   }
 
-  renderContent(CONTENT);
+  fetch('content.json')
+    .then(res => res.json())
+    .then(data => renderContent(data))
+    .catch(e => console.error('Failed to load content', e));
 
   // ── Selection management ───────────────────────────────────────
   function selectItem(item) {
