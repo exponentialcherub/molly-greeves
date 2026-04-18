@@ -2,8 +2,7 @@ backend:
   name: github
   repo: exponentialcherub/molly-greeves
   branch: main
-  base_url: https://jade-griffin-c313bf.netlify.app
-  auth_endpoint: api/auth
+  base_url: sveltia-cms-auth.liamsamuelgibbs-adb.workers.dev
 
 media_folder: "."
 public_folder: "."
