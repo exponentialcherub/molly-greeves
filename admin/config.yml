@@ -35,3 +35,19 @@ collections:
             name: "news"
             widget: "list"
             fields: *article_fields
+      - label: "Site Settings"
+        name: "site_settings"
+        file: "meta.json"
+        fields:
+          - { label: "Job Title", name: "jobTitle", widget: "string" }
+          - { label: "Availability Text", name: "availabilityText", widget: "string" }
+          - { label: "Contact Email", name: "contactEmail", widget: "string" }
+          - label: "Contact Availability Tags"
+            name: "contactAvailabilityTags"
+            widget: "list"
+            field: { label: "Tag", name: "tag", widget: "string" }
+          - { label: "Contact Body", name: "contactBody", widget: "text" }
+          - label: "Bio"
+            name: "bio"
+            widget: "list"
+            field: { label: "Paragraph", name: "paragraph", widget: "text" }

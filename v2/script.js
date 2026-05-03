@@ -300,13 +300,17 @@
   /* ============================================================
      INIT
      ============================================================ */
-  fetch('../content.json')
-    .then(res => res.json())
-    .then(data => {
-      applyMeta(data.meta);
-      buildWorkGrid(data);
-      populateLatestInvestigation(data);
+  Promise.all([
+    fetch('../content.json').then(function(r) { return r.json(); }),
+    fetch('../meta.json').then(function(r) { return r.json(); })
+  ])
+    .then(function(results) {
+      var content = results[0];
+      var meta    = results[1];
+      applyMeta(meta);
+      buildWorkGrid(content);
+      populateLatestInvestigation(content);
     })
-    .catch(e => console.error('Failed to load content', e));
+    .catch(function(e) { console.error('Failed to load content', e); });
 
 })();
