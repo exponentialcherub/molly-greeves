@@ -53,7 +53,6 @@ body {
   line-height: 1.6;
   background-color: var(--bg);
   color: var(--text);
-  cursor: none;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -122,7 +121,7 @@ a { text-decoration: none; }
 .loader-name {
   font-family: var(--serif);
   font-style: italic;
-  font-weight: 2;
+  font-weight: 100;
   font-size: clamp(3.8rem, 11vw, 8.5rem);
   color: #f7f3ec;
   letter-spacing: -0.03em;
@@ -148,24 +147,6 @@ a { text-decoration: none; }
   color: rgba(247, 243, 236, 0.45);
   text-align: center;
   animation: loaderCredIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.4s both;
-}
-
-/* ============================================================
-   CUSTOM CURSOR
-   ============================================================ */
-.cursor-dot {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 8px;
-  height: 8px;
-  background: var(--accent);
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 9999;
-  transform: translate(-50%, -50%);
-  transition: opacity 0.25s ease, transform 0.08s ease;
-  will-change: left, top;
 }
 
 /* ============================================================
@@ -200,7 +181,6 @@ a { text-decoration: none; }
   font-weight: 500;
   letter-spacing: 0.025em;
   color: var(--text);
-  cursor: none;
   transition: opacity 0.15s ease;
 }
 .site-name:hover { opacity: 0.7; }
@@ -221,7 +201,6 @@ a { text-decoration: none; }
   border: none;
   padding: 0 22px;
   height: var(--tab-h);
-  cursor: none;
   position: relative;
   transition: color 0.15s ease;
 }
@@ -298,14 +277,14 @@ a { text-decoration: none; }
 }
 
 .portrait-frame {
-  flex: 1;
-  max-height: 50%;
   width: 82%;
+  aspect-ratio: 3 / 4;
   align-self: center;
   overflow: hidden;
   border-radius: var(--radius);
   position: relative;
   border: 1.5px solid rgba(139, 74, 43, 0.38);
+  flex-shrink: 0;
 }
 
 .portrait-img {
@@ -322,6 +301,90 @@ a { text-decoration: none; }
   .portrait-img:hover {
     filter: sepia(0%) contrast(1);
   }
+}
+
+/* Latest investigation card — sidecar under publication list */
+.latest-investigation {
+  display: block;
+  margin-top: 22px;
+  padding: 20px 22px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  text-decoration: none;
+  color: inherit;
+  transition: background-color 0.25s var(--ease-out), transform 0.25s var(--ease-out), border-color 0.25s var(--ease-out);
+}
+.latest-investigation:hover {
+  background: rgba(166, 74, 48, 0.05);
+  border-color: rgba(166, 74, 48, 0.35);
+  transform: translateY(-1px);
+}
+.latest-investigation:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.li-kicker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.li-kicker-text {
+  font-size: 0.54rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+.li-kicker-text::before {
+  content: "";
+  display: inline-block;
+  width: 14px;
+  height: 1px;
+  background: var(--accent);
+}
+.li-tag {
+  font-size: 0.54rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  background: rgba(139, 74, 43, 0.92);
+  color: var(--bg);
+  padding: 2px 7px;
+  border-radius: 1px;
+}
+.li-pub {
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+.li-title {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 1.1rem;
+  line-height: 1.32;
+  letter-spacing: -0.005em;
+  color: var(--text);
+  margin-bottom: 12px;
+}
+.li-cta {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 0.92rem;
+  color: var(--accent);
+  border-bottom: 1px solid currentColor;
+  padding-bottom: 1px;
+  display: inline-block;
 }
 
 .publication-logos {
@@ -511,8 +574,14 @@ a { text-decoration: none; }
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: var(--sage);
+  background: var(--avail-dot, #4caf50);
+  box-shadow: 0 0 0 0 var(--avail-dot, #4caf50);
   flex-shrink: 0;
+  animation: availPulse var(--avail-pulse-dur, 2.5s) ease-in-out infinite;
+}
+@keyframes availPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.45); }
+  50%      { box-shadow: 0 0 0 5px rgba(76, 175, 80, 0); }
 }
 
 .contact-cta {
@@ -526,7 +595,6 @@ a { text-decoration: none; }
   border: none;
   padding: 12px 28px;
   border-radius: var(--radius);
-  cursor: none;
   transition: background 0.15s ease, transform 0.15s ease;
 }
 .contact-cta:hover {
@@ -580,7 +648,6 @@ a { text-decoration: none; }
   border: 1px solid var(--border);
   padding: 7px 15px;
   border-radius: var(--radius);
-  cursor: none;
   transition: color 0.13s ease, border-color 0.13s ease, background 0.13s ease;
 }
 .filter-btn:hover {
@@ -613,7 +680,6 @@ a { text-decoration: none; }
   flex-direction: column;
   box-shadow: var(--shadow-soft);
   transition: box-shadow 0.18s ease, transform 0.18s ease;
-  cursor: none;
 }
 .article-card:hover {
   box-shadow: var(--shadow-lift);
@@ -710,91 +776,6 @@ a { text-decoration: none; }
 }
 
 /* ============================================================
-   SPECIALISMS TAB
-   ============================================================ */
-.specialisms-layout {
-  padding: 40px 52px 56px;
-  max-width: 860px;
-}
-
-.specialisms-header {
-  margin-bottom: 40px;
-  padding-bottom: 28px;
-  border-bottom: 1px solid var(--border);
-}
-
-.specialisms-lead {
-  font-family: var(--serif);
-  font-size: 1.1rem;
-  font-style: italic;
-  color: var(--text-mid);
-  line-height: 1.75;
-  max-width: 540px;
-  margin-top: 10px;
-}
-
-.specialisms-sections {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-
-.specialism-item {
-  display: flex;
-  gap: 26px;
-  padding: 34px 0;
-  border-bottom: 1px solid var(--border-light);
-}
-.specialism-item:last-child {
-  border-bottom: none;
-}
-.specialism-item:first-child {
-  padding-top: 0;
-}
-
-.specialism-accent {
-  width: 2.5px;
-  min-height: 100%;
-  background: var(--sage);
-  border-radius: 2px;
-  flex-shrink: 0;
-  opacity: 0.55;
-}
-
-.specialism-body-wrap {
-  flex: 1;
-}
-
-.specialism-title {
-  font-family: var(--serif);
-  font-size: 1.3rem;
-  font-weight: 500;
-  color: var(--text);
-  margin-bottom: 11px;
-}
-
-.specialism-body {
-  font-size: 0.88rem;
-  line-height: 1.85;
-  color: var(--text);
-  opacity: 0.83;
-  max-width: 660px;
-}
-
-.specialism-quote {
-  font-family: var(--serif);
-  font-size: 0.85rem;
-  font-style: italic;
-  color: var(--accent);
-  margin-top: 16px;
-  padding-left: 16px;
-  border-left: 2px solid var(--accent);
-  line-height: 1.65;
-  opacity: 0.88;
-  max-width: 580px;
-}
-
-/* ============================================================
    CONTACT TAB
    ============================================================ */
 #contact {
@@ -875,7 +856,6 @@ a { text-decoration: none; }
 
 .social-link {
   color: var(--text-muted);
-  cursor: none;
   display: flex;
   align-items: center;
   transition: color 0.15s ease;
@@ -1044,10 +1024,6 @@ a { text-decoration: none; }
     padding: 44px 20px;
     align-items: center;
   }
-
-  /* Hide cursor dot */
-  .cursor-dot { display: none; }
-  body, a, button, [role="button"] { cursor: auto; }
 }
 
 /* Medium screens — 2-col grid */

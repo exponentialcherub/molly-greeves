@@ -26,50 +26,11 @@
   })();
 
   /* ── DOM refs ── */
-  const cursorDot  = document.getElementById('cursorDot');
   const tabBtns    = document.querySelectorAll('.tab-btn');
   const tabPanels  = document.querySelectorAll('.tab-panel');
   const tabIndicator = document.querySelector('.tab-indicator');
   const articlesGrid = document.getElementById('articlesGrid');
   const filterBtns = document.querySelectorAll('.filter-btn');
-
-  /* ============================================================
-     CUSTOM CURSOR (desktop only)
-     ============================================================ */
-  const hasFinePointer = window.matchMedia('(pointer: fine)').matches;
-
-  if (hasFinePointer && cursorDot) {
-    let cx = -20, cy = -20;
-
-    document.addEventListener('mousemove', (e) => {
-      cx = e.clientX;
-      cy = e.clientY;
-      cursorDot.style.left = cx + 'px';
-      cursorDot.style.top  = cy + 'px';
-    });
-
-    document.addEventListener('mouseleave', () => {
-      cursorDot.style.opacity = '0';
-    });
-    document.addEventListener('mouseenter', () => {
-      cursorDot.style.opacity = '1';
-    });
-
-    /* Grow dot on interactive elements */
-    document.querySelectorAll('a, button').forEach(el => {
-      el.addEventListener('mouseenter', () => {
-        cursorDot.style.transform = 'translate(-50%, -50%) scale(1.8)';
-        cursorDot.style.opacity   = '0.7';
-      });
-      el.addEventListener('mouseleave', () => {
-        cursorDot.style.transform = 'translate(-50%, -50%) scale(1)';
-        cursorDot.style.opacity   = '1';
-      });
-    });
-  } else {
-    /* Touch device — restore cursor, hide dot */
-    if (cursorDot) cursorDot.style.display = 'none';
-  }
 
   /* ============================================================
      TAB SWITCHING
@@ -160,19 +121,18 @@
   /* ============================================================
      WORK TAB — build article grid from CONTENT
      ============================================================ */
-  function buildWorkGrid() {
-    if (!articlesGrid || typeof CONTENT === 'undefined') return;
+  function buildWorkGrid(content) {
+    if (!articlesGrid || !content) return;
 
     /* Order: investigations first (most impressive), then features, then news */
     const allArticles = [
-      ...CONTENT.investigations.map(a => ({ ...a, category: 'investigations' })),
-      ...CONTENT.features.map(a => ({ ...a, category: 'features' })),
-      ...CONTENT.news.map(a => ({ ...a, category: 'news' })),
+      ...content.investigations.map(a => ({ ...a, category: 'investigations' })),
+      ...content.features.map(a => ({ ...a, category: 'features' })),
+      ...content.news.map(a => ({ ...a, category: 'news' })),
     ];
 
     allArticles.forEach(article => {
-      const card = createCard(article);
-      articlesGrid.appendChild(card);
+      articlesGrid.appendChild(createCard(article));
     });
   }
 
@@ -254,9 +214,99 @@
       .replace(/'/g, '&#39;');
   }
 
+  function applyMeta(meta) {
+    if (!meta) return;
+
+    if (meta.jobTitle) {
+      document.title = 'Molly Greeves \u2014 ' + meta.jobTitle;
+      var loaderCred = document.querySelector('.loader-credential');
+      if (loaderCred) loaderCred.textContent = meta.jobTitle;
+      var heroRole = document.querySelector('.hero-role');
+      if (heroRole) heroRole.textContent = meta.jobTitle;
+      var sigTitle = document.querySelector('.sig-title');
+      if (sigTitle) sigTitle.textContent = meta.jobTitle;
+    }
+
+    if (meta.availabilityText) {
+      var heroAvail = document.querySelector('.hero-availability');
+      if (heroAvail) {
+        var dot = heroAvail.querySelector('.availability-dot');
+        heroAvail.textContent = meta.availabilityText;
+        if (dot) heroAvail.insertBefore(dot, heroAvail.firstChild);
+      }
+    }
+
+    if (meta.contactEmail) {
+      var emailEl = document.querySelector('.contact-email');
+      if (emailEl) {
+        emailEl.textContent = meta.contactEmail;
+        emailEl.href = 'mailto:' + meta.contactEmail;
+      }
+    }
+
+    if (meta.contactAvailabilityTags) {
+      var availEl = document.querySelector('.contact-avail');
+      if (availEl) {
+        availEl.innerHTML = '';
+        meta.contactAvailabilityTags.forEach(function (tag, i) {
+          var span = document.createElement('span');
+          span.className = 'avail-tag';
+          span.textContent = tag;
+          availEl.appendChild(span);
+          if (i < meta.contactAvailabilityTags.length - 1) {
+            var sep = document.createElement('span');
+            sep.className = 'avail-sep';
+            sep.setAttribute('aria-hidden', 'true');
+            sep.textContent = '\u00b7';
+            availEl.appendChild(sep);
+          }
+        });
+      }
+    }
+
+    if (meta.contactBody) {
+      var bodyEl = document.querySelector('.contact-body');
+      if (bodyEl) bodyEl.textContent = meta.contactBody;
+    }
+
+    if (meta.bio) {
+      var heroText = document.querySelector('.hero-text');
+      if (heroText) {
+        heroText.querySelectorAll('.hero-bio').forEach(function (el) { el.remove(); });
+        var rule = heroText.querySelector('.hero-rule');
+        var insertAfter = rule;
+        meta.bio.forEach(function (text, i) {
+          var p = document.createElement('p');
+          p.className = 'hero-bio';
+          p.style.setProperty('--delay', (360 + i * 70) + 'ms');
+          p.textContent = text;
+          insertAfter.insertAdjacentElement('afterend', p);
+          insertAfter = p;
+        });
+      }
+    }
+  }
+
+  function populateLatestInvestigation(data) {
+    const inv = data.investigations && data.investigations[0];
+    if (!inv) return;
+    const el = document.querySelector('.latest-investigation');
+    if (!el) return;
+    el.href = inv.url;
+    el.querySelector('.li-pub').textContent = inv.publication;
+    el.querySelector('.li-title').textContent = inv.title;
+  }
+
   /* ============================================================
      INIT
      ============================================================ */
-  buildWorkGrid();
+  fetch('../content.json')
+    .then(res => res.json())
+    .then(data => {
+      applyMeta(data.meta);
+      buildWorkGrid(data);
+      populateLatestInvestigation(data);
+    })
+    .catch(e => console.error('Failed to load content', e));
 
 })();
