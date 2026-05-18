@@ -64,8 +64,11 @@
     if (currentPanel) currentPanel.classList.remove('active');
     requestAnimationFrame(() => {
       targetPanel.classList.add('active');
-      /* Scroll new panel to top */
+      /* Scroll new panel to top — on mobile the body owns scroll */
       targetPanel.scrollTop = 0;
+      if (window.matchMedia('(max-width: 800px)').matches) {
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      }
     });
   }
 
@@ -116,6 +119,18 @@
   /* Only on desktop — mobile resets all transitions via CSS */
   if (window.matchMedia('(min-width: 801px)').matches) {
     triggerAboutAnimation();
+  }
+
+  /* On mobile, move portrait + investigation card into the hero text flow,
+     between the role/chips and the bio, so they sit under the name on scroll */
+  if (window.matchMedia('(max-width: 800px)').matches) {
+    const awardChips = document.querySelector('.award-chips');
+    const portrait   = document.querySelector('.portrait-frame');
+    const latestInv  = document.querySelector('.latest-investigation');
+    if (awardChips && portrait && latestInv) {
+      awardChips.insertAdjacentElement('afterend', portrait);
+      portrait.insertAdjacentElement('afterend', latestInv);
+    }
   }
 
   /* ============================================================
