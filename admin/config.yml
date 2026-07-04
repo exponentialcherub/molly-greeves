@@ -21,7 +21,7 @@ collections:
             fields: &article_fields
               - { label: "Publication", name: "publication", widget: "string" }
               - { label: "Title", name: "title", widget: "string" }
-              - { label: "Date", name: "date", widget: "string", hint: "e.g. 6 Mar 2026" }
+              - { label: "Date", name: "date", widget: "datetime", type: "date", format: "D MMM YYYY" }
               - { label: "URL", name: "url", widget: "string" }
               - { label: "Image URL", name: "image", widget: "string", required: false }
               - { label: "Excerpt", name: "excerpt", widget: "text", required: false }

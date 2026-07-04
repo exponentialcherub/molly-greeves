@@ -124,12 +124,12 @@
   function buildWorkGrid(content) {
     if (!articlesGrid || !content) return;
 
-    /* Order: investigations first (most impressive), then features, then news */
+    /* Order by date. */
     const allArticles = [
       ...content.investigations.map(a => ({ ...a, category: 'investigations' })),
       ...content.features.map(a => ({ ...a, category: 'features' })),
       ...content.news.map(a => ({ ...a, category: 'news' })),
-    ];
+    ].sort((a, b) => new Date(b.date) - new Date(a.date));
 
     allArticles.forEach(article => {
       articlesGrid.appendChild(createCard(article));
