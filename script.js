@@ -1,294 +1,316 @@
-/* v5.js — Molly Greeves portfolio, content loaded from content.json */
+/* ============================================================
+   MOLLY GREEVES — Portfolio Site
+   Vanilla JS — Tab switching, content rendering, animations
+   ============================================================ */
 
 (function () {
-  const mainLayout   = document.querySelector('.main-layout');
-  const colList      = document.querySelector('.col-list');
-  const previewInner = document.querySelector('.preview-inner');
-  const pubEl        = document.getElementById('preview-pub-el');
-  const titleEl      = document.getElementById('preview-title-el');
-  const dateEl       = document.getElementById('preview-date-el');
-  const excerptEl    = document.getElementById('preview-excerpt-el');
-  const ctaEl        = document.getElementById('preview-cta-el');
-  const imageEl      = document.getElementById('preview-image-el');
+  'use strict';
 
-  let selectedItem = null;
+    // ── Loader sequence ──────────────────────────────────────────
+  (function runLoader() {
+    const loader  = document.getElementById('loader');
+    const wrapper = document.querySelector('.site-wrapper');
+    if (!loader || !wrapper) return;
 
-  // ── Mobile sheet ───────────────────────────────────────────────
-  const sheetEl      = document.getElementById('mobile-sheet');
-  const sheetOverlay = document.getElementById('mobile-sheet-overlay');
-  const sheetPubEl   = document.getElementById('sheet-pub-el');
-  const sheetTitleEl = document.getElementById('sheet-title-el');
-  const sheetDateEl  = document.getElementById('sheet-date-el');
-  const sheetExcerpt = document.getElementById('sheet-excerpt-el');
-  const sheetCtaEl   = document.getElementById('sheet-cta-el');
+    const HOLD_MS = 1600;
+    const FADE_MS = 700;
 
-  function isMobile() {
-    const colPreview = document.querySelector('.col-preview');
-    return colPreview && getComputedStyle(colPreview).display === 'none';
+    setTimeout(function () {
+      loader.classList.add('loader--exit');
+      wrapper.classList.remove('site-wrapper--hidden');
+
+      setTimeout(function () {
+        loader.classList.add('loader--gone');
+      }, FADE_MS);
+    }, HOLD_MS);
+  })();
+
+  /* ── DOM refs ── */
+  const tabBtns    = document.querySelectorAll('.tab-btn');
+  const tabPanels  = document.querySelectorAll('.tab-panel');
+  const tabIndicator = document.querySelector('.tab-indicator');
+  const articlesGrid = document.getElementById('articlesGrid');
+  const filterBtns = document.querySelectorAll('.filter-btn');
+
+  /* ============================================================
+     TAB SWITCHING
+     ============================================================ */
+  function updateIndicator(btn) {
+    if (!tabIndicator) return;
+    const nav     = btn.parentElement;
+    const navRect = nav.getBoundingClientRect();
+    const btnRect = btn.getBoundingClientRect();
+    tabIndicator.style.left  = (btnRect.left - navRect.left) + 'px';
+    tabIndicator.style.width = btnRect.width + 'px';
   }
 
-  function openSheet(item) {
-    sheetPubEl.textContent   = item.dataset.previewPub   || '';
-    sheetTitleEl.textContent = item.dataset.previewTitle || '';
-    sheetDateEl.textContent  = item.dataset.previewDate  || '';
-    sheetExcerpt.textContent = item.dataset.previewExcerpt || '';
-    sheetCtaEl.href = item.dataset.previewUrl || '#!';
-    sheetCtaEl.textContent = item.dataset.previewExcerpt
-      ? 'Read article \u2192'
-      : 'View at ' + (item.dataset.previewPub || 'publication') + ' \u2192';
+  function switchTab(targetId) {
+    const currentPanel = document.querySelector('.tab-panel.active');
+    const targetPanel  = document.getElementById(targetId);
+    if (!targetPanel || currentPanel === targetPanel) return;
 
-    sheetEl.setAttribute('aria-hidden', 'false');
-    sheetOverlay.setAttribute('aria-hidden', 'false');
-    sheetEl.classList.add('visible');
-    sheetOverlay.classList.add('visible');
-    document.body.style.overflow = 'hidden';
+    /* Update button states */
+    tabBtns.forEach(btn => {
+      const isActive = btn.dataset.tab === targetId;
+      btn.classList.toggle('active', isActive);
+      btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+    });
 
-    // Move focus into the sheet
-    sheetTitleEl.setAttribute('tabindex', '-1');
-    sheetTitleEl.focus({ preventScroll: true });
-  }
+    /* Move indicator */
+    const activeBtn = document.querySelector(`.tab-btn[data-tab="${targetId}"]`);
+    if (activeBtn) updateIndicator(activeBtn);
 
-  function closeSheet() {
-    sheetEl.classList.remove('visible');
-    sheetOverlay.classList.remove('visible');
-    sheetEl.setAttribute('aria-hidden', 'true');
-    sheetOverlay.setAttribute('aria-hidden', 'true');
-    document.body.style.overflow = '';
-  }
-
-  sheetOverlay.addEventListener('click', closeSheet);
-
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && sheetEl.classList.contains('visible')) closeSheet();
-  });
-
-  // ── Render articles from content.js ───────────────────────────
-  function buildItem(article) {
-    const li = document.createElement('li');
-    li.className = 'list-item';
-    li.setAttribute('tabindex', '0');
-    li.dataset.previewPub     = article.publication || '';
-    li.dataset.previewTitle   = article.title       || '';
-    li.dataset.previewDate    = article.date        || '';
-    li.dataset.previewExcerpt = article.excerpt     || '';
-    li.dataset.previewUrl     = article.url         || '#!';
-    if (article.badge)     li.dataset.previewBadge     = article.badge;
-    if (article.badgeType) li.dataset.previewBadgeType = article.badgeType;
-    if (article.image)     li.dataset.previewImage     = article.image;
-
-    const meta = document.createElement('div');
-    meta.className = 'item-meta';
-
-    const pubSpan = document.createElement('span');
-    pubSpan.className = 'item-pub';
-    if (article.badge) {
-      const badgeSpan = document.createElement('span');
-      badgeSpan.className = 'item-badge' + (article.badgeType === 'campaign' ? ' campaign' : '');
-      badgeSpan.textContent = article.badge;
-      pubSpan.appendChild(badgeSpan);
-      pubSpan.appendChild(document.createTextNode(' ' + article.publication));
-    } else {
-      pubSpan.textContent = article.publication;
-    }
-
-    const yearSpan = document.createElement('span');
-    yearSpan.className = 'item-year';
-    yearSpan.textContent = article.date;
-
-    meta.appendChild(pubSpan);
-    meta.appendChild(yearSpan);
-
-    const titleSpan = document.createElement('span');
-    titleSpan.className = 'item-title';
-    titleSpan.textContent = article.title;
-
-    li.appendChild(meta);
-    li.appendChild(titleSpan);
-    return li;
-  }
-
-  function renderContent(data) {
-    ['features', 'news', 'investigations'].forEach(tab => {
-      const list = document.getElementById('tab-' + tab);
-      if (!list || !data[tab]) return;
-      list.innerHTML = '';
-      data[tab].forEach(article => list.appendChild(buildItem(article)));
+    /* Crossfade panels */
+    if (currentPanel) currentPanel.classList.remove('active');
+    requestAnimationFrame(() => {
+      targetPanel.classList.add('active');
+      /* Scroll new panel to top */
+      targetPanel.scrollTop = 0;
     });
   }
 
-  fetch('content.json')
-    .then(res => res.json())
-    .then(data => renderContent(data))
-    .catch(e => console.error('Failed to load content', e));
-
-  // ── Selection management ───────────────────────────────────────
-  function selectItem(item) {
-    if (selectedItem) selectedItem.classList.remove('selected');
-    selectedItem = item;
-    if (selectedItem) {
-      selectedItem.classList.add('selected');
-      populatePreview(selectedItem);
-    } else {
-      clearPreview();
-    }
-  }
-
-  // ── Tab switching ──────────────────────────────────────────────
-  document.querySelectorAll('.list-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      const target = tab.dataset.tab;
-
-      document.querySelectorAll('.list-tab').forEach(t => {
-        t.classList.remove('active');
-        t.setAttribute('aria-selected', 'false');
-      });
-      document.querySelectorAll('.item-list').forEach(l => l.classList.remove('active'));
-
-      tab.classList.add('active');
-      tab.setAttribute('aria-selected', 'true');
-      const newList = document.getElementById('tab-' + target);
-      if (newList) newList.classList.add('active');
-
-      // Auto-select first item in new tab
-      const firstItem = newList ? newList.querySelector('.list-item') : null;
-      selectItem(firstItem || null);
-    });
+  /* Tab button clicks */
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => switchTab(btn.dataset.tab));
   });
 
-  // ── Preview population ─────────────────────────────────────────
-  function populatePreview(item) {
-    const pub       = item.dataset.previewPub      || '';
-    const title     = item.dataset.previewTitle    || '';
-    const date      = item.dataset.previewDate     || '';
-    const excerpt   = item.dataset.previewExcerpt  || '';
-    const url       = item.dataset.previewUrl      || '#!';
-    const badge     = item.dataset.previewBadge    || '';
-    const badgeType = item.dataset.previewBadgeType || '';
-    const image     = item.dataset.previewImage    || '';
-
-    const existingBadge = document.getElementById('preview-badge-el');
-    if (existingBadge) existingBadge.remove();
-
-    if (image) {
-      imageEl.src = image;
-      imageEl.alt = title;
-      imageEl.style.display = 'block';
-    } else {
-      imageEl.src = '';
-      imageEl.alt = '';
-      imageEl.style.display = 'none';
-    }
-
-    pubEl.textContent  = pub;
-    titleEl.textContent = title;
-    dateEl.textContent  = date;
-
-    if (badge) {
-      const badgeNode = document.createElement('span');
-      badgeNode.id = 'preview-badge-el';
-      badgeNode.className = 'preview-badge' + (badgeType === 'campaign' ? ' campaign' : '');
-      badgeNode.textContent = badge;
-      titleEl.parentNode.insertBefore(badgeNode, titleEl);
-    }
-
-    if (excerpt) {
-      excerptEl.textContent   = excerpt;
-      excerptEl.style.display = '';
-    } else {
-      excerptEl.textContent   = '';
-      excerptEl.style.display = 'none';
-    }
-
-    ctaEl.innerHTML = (excerpt ? 'Read article' : 'View at ' + pub) + ' <span class="cta-arrow">\u2192</span>';
-    ctaEl.href = url;
-
-    previewInner.classList.add('showing-content');
-  }
-
-  function clearPreview() {
-    previewInner.classList.remove('showing-content');
-    const existingBadge = document.getElementById('preview-badge-el');
-    if (existingBadge) existingBadge.remove();
-    imageEl.src = '';
-    imageEl.alt = '';
-    imageEl.style.display = 'none';
-  }
-
-  // Restore selected item on mouse-out (or clear if nothing selected)
-  function restoreSelected() {
-    if (selectedItem) {
-      populatePreview(selectedItem);
-    } else {
-      clearPreview();
-    }
-  }
-
-  // ── Event delegation ───────────────────────────────────────────
-
-  // Hover previews without changing selection.
-  // If cursor is in the list but not over an item (gap/padding zones), restore selected.
-  colList.addEventListener('mouseover', e => {
-    const item = e.target.closest('.list-item');
-    if (item) {
-      populatePreview(item);
-    } else {
-      restoreSelected();
-    }
-  });
-
-  // Restore when cursor leaves the list column (moves to preview pane, info col, etc.)
-  colList.addEventListener('mouseleave', restoreSelected);
-
-  // Click selects on desktop, opens sheet on mobile
-  colList.addEventListener('click', e => {
-    const item = e.target.closest('.list-item');
-    if (!item) return;
-    if (isMobile()) {
-      selectItem(item);
-      openSheet(item);
-    } else {
-      selectItem(item);
-    }
-  });
-
-  // Keyboard: Enter/Space selects; on mobile also opens sheet
-  colList.addEventListener('keydown', e => {
-    const item = e.target.closest('.list-item');
-    if (!item) return;
-    if (e.key === 'Enter' || e.key === ' ') {
+  /* Site name → About */
+  const siteName = document.querySelector('.site-name');
+  if (siteName) {
+    siteName.addEventListener('click', (e) => {
       e.preventDefault();
-      selectItem(item);
-      if (isMobile()) openSheet(item);
+      switchTab('about');
+    });
+  }
+
+  /* "Get in touch" CTA → Contact */
+  const contactCta = document.querySelector('.contact-cta');
+  if (contactCta) {
+    contactCta.addEventListener('click', () => switchTab('contact'));
+  }
+
+  /* Reposition indicator on window resize */
+  window.addEventListener('resize', () => {
+    const activeBtn = document.querySelector('.tab-btn.active');
+    if (activeBtn) updateIndicator(activeBtn);
+  });
+
+  /* Set initial indicator position after fonts load */
+  document.fonts.ready.then(() => {
+    const initialBtn = document.querySelector('.tab-btn.active');
+    if (initialBtn) updateIndicator(initialBtn);
+  });
+
+  /* ============================================================
+     ABOUT TAB — staggered entrance animation
+     ============================================================ */
+  function triggerAboutAnimation() {
+    const about = document.getElementById('about');
+    if (!about) return;
+    /* Brief delay so the tab transition completes first */
+    setTimeout(() => {
+      about.classList.add('about-revealed');
+    }, 80);
+  }
+
+  /* Only on desktop — mobile resets all transitions via CSS */
+  if (window.matchMedia('(min-width: 801px)').matches) {
+    triggerAboutAnimation();
+  }
+
+  /* ============================================================
+     WORK TAB — build article grid from CONTENT
+     ============================================================ */
+  function buildWorkGrid(content) {
+    if (!articlesGrid || !content) return;
+
+    /* Order by date. */
+    const allArticles = [
+      ...content.investigations.map(a => ({ ...a, category: 'investigations' })),
+      ...content.features.map(a => ({ ...a, category: 'features' })),
+      ...content.news.map(a => ({ ...a, category: 'news' })),
+    ].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    allArticles.forEach(article => {
+      articlesGrid.appendChild(createCard(article));
+    });
+  }
+
+  function createCard(article) {
+    const a = document.createElement('a');
+    a.href   = article.url;
+    a.target = '_blank';
+    a.rel    = 'noopener noreferrer';
+    a.classList.add('article-card');
+    a.dataset.category = article.category;
+    a.setAttribute('role', 'listitem');
+    a.setAttribute('aria-label', `${article.title} — ${article.publication}`);
+
+    /* Determine the type badge */
+    let badgeLabel, badgeClass;
+    if (article.badge && article.badgeType) {
+      badgeLabel = article.badge;
+      badgeClass = article.badgeType; /* 'investigation' or 'campaign' */
+    } else {
+      const labels = {
+        features:       'Feature',
+        news:           'News',
+        investigations: 'Investigation',
+      };
+      badgeLabel = labels[article.category] || '';
+      badgeClass = article.category === 'features' ? 'feature'
+                 : article.category === 'news'     ? 'news'
+                 : 'investigation';
     }
+
+    const imgHtml = article.image
+      ? `<img class="card-img" src="${escHtml(article.image)}" alt="" loading="lazy" aria-hidden="true">`
+      : '';
+
+    const excerptHtml = article.excerpt
+      ? `<p class="card-excerpt">${escHtml(article.excerpt)}</p>`
+      : '';
+
+    a.innerHTML = `
+      ${imgHtml}
+      <div class="card-body">
+        <div class="card-meta">
+          <span class="card-publication">${escHtml(article.publication)}</span>
+          <span class="card-type ${escHtml(badgeClass)}">${escHtml(badgeLabel)}</span>
+        </div>
+        <h3 class="card-title">${escHtml(article.title)}</h3>
+        ${excerptHtml}
+        <span class="card-date">${escHtml(article.date)}</span>
+      </div>
+    `;
+
+    return a;
+  }
+
+  /* ── Filter buttons ── */
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      filterArticles(btn.dataset.filter);
+    });
   });
 
-  colList.addEventListener('focusin', e => {
-    const item = e.target.closest('.list-item');
-    if (item) populatePreview(item);
-  });
+  function filterArticles(filter) {
+    document.querySelectorAll('.article-card').forEach(card => {
+      const match = filter === 'all' || card.dataset.category === filter;
+      card.classList.toggle('hidden', !match);
+    });
+  }
 
-  colList.addEventListener('focusout', e => {
-    if (!colList.contains(e.relatedTarget)) {
-      restoreSelected();
+  /* ── Sanitise helper ── */
+  function escHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function applyMeta(meta) {
+    if (!meta) return;
+
+    if (meta.jobTitle) {
+      document.title = 'Molly Greeves — ' + meta.jobTitle;
+      var loaderCred = document.querySelector('.loader-credential');
+      if (loaderCred) loaderCred.textContent = meta.jobTitle;
+      var heroRole = document.querySelector('.hero-role');
+      if (heroRole) heroRole.textContent = meta.jobTitle;
+      var sigTitle = document.querySelector('.sig-title');
+      if (sigTitle) sigTitle.textContent = meta.jobTitle;
     }
-  });
 
-  // Restore selected article when cursor leaves the layout
-  mainLayout.addEventListener('mouseleave', restoreSelected);
+    if (meta.availabilityText) {
+      var heroAvail = document.querySelector('.hero-availability');
+      if (heroAvail) {
+        var dot = heroAvail.querySelector('.availability-dot');
+        heroAvail.textContent = meta.availabilityText;
+        if (dot) heroAvail.insertBefore(dot, heroAvail.firstChild);
+      }
+    }
 
-  document.addEventListener('click', e => {
-    const link = e.target.closest('a');
-    if (link && link.getAttribute('href') === '#!') e.preventDefault();
-  });
+    if (meta.contactEmail) {
+      var emailEl = document.querySelector('.contact-email');
+      if (emailEl) {
+        emailEl.textContent = meta.contactEmail;
+        emailEl.href = 'mailto:' + meta.contactEmail;
+      }
+    }
 
-  // ── Auto-select first article on load ─────────────────────────
-  const firstItem = document.querySelector('#tab-features .list-item');
-  if (firstItem) selectItem(firstItem);
+    if (meta.contactAvailabilityTags) {
+      var availEl = document.querySelector('.contact-avail');
+      if (availEl) {
+        availEl.innerHTML = '';
+        meta.contactAvailabilityTags.forEach(function (tag, i) {
+          var span = document.createElement('span');
+          span.className = 'avail-tag';
+          span.textContent = tag;
+          availEl.appendChild(span);
+          if (i < meta.contactAvailabilityTags.length - 1) {
+            var sep = document.createElement('span');
+            sep.className = 'avail-sep';
+            sep.setAttribute('aria-hidden', 'true');
+            sep.textContent = '·';
+            availEl.appendChild(sep);
+          }
+        });
+      }
+    }
 
-  // ── For curious developers ─────────────────────────────────────
-  console.log(
-    '%c Molly Greeves ',
-    'background:#4a6741;color:#f7f3ec;font-family:Georgia,serif;font-size:15px;padding:4px 12px;',
-    '\n\nAward-winning consumer & personal finance journalist.\nGet in touch: molly.greeves@the-independent.com'
-  );
+    if (meta.contactBody) {
+      var bodyEl = document.querySelector('.contact-body');
+      if (bodyEl) bodyEl.textContent = meta.contactBody;
+    }
+
+    if (meta.bio) {
+      var heroText = document.querySelector('.hero-text');
+      if (heroText) {
+        heroText.querySelectorAll('.hero-bio').forEach(function (el) { el.remove(); });
+        var rule = heroText.querySelector('.hero-rule');
+        var insertAfter = rule;
+        meta.bio.forEach(function (text, i) {
+          var p = document.createElement('p');
+          p.className = 'hero-bio';
+          p.style.setProperty('--delay', (360 + i * 70) + 'ms');
+          p.textContent = text;
+          insertAfter.insertAdjacentElement('afterend', p);
+          insertAfter = p;
+        });
+      }
+    }
+  }
+
+  function populateLatestInvestigation(data) {
+    const inv = data.investigations && data.investigations[0];
+    if (!inv) return;
+    const el = document.querySelector('.latest-investigation');
+    if (!el) return;
+    el.href = inv.url;
+    el.querySelector('.li-pub').textContent = inv.publication;
+    el.querySelector('.li-title').textContent = inv.title;
+  }
+
+  /* ============================================================
+     INIT
+     ============================================================ */
+  Promise.all([
+    fetch('content.json').then(function(r) { return r.json(); }),
+    fetch('meta.json').then(function(r) { return r.json(); })
+  ])
+    .then(function(results) {
+      var content = results[0];
+      var meta    = results[1];
+      applyMeta(meta);
+      buildWorkGrid(content);
+      populateLatestInvestigation(content);
+    })
+    .catch(function(e) { console.error('Failed to load content', e); });
+
 })();
