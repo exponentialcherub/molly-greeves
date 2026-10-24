@@ -1,6 +1,16 @@
 {
   "investigations": [
     {
+      "publication": "The Londoner",
+      "title": "How high temperatures and Thames Water delays put an East London pub out of action",
+      "date": "8 Oct 2026",
+      "url": "https://www.the-londoner.co.uk/thames-water-pub-flood-lord-morpeth-heatwaves/",
+      "image": "https://storage.ghost.io/c/26/ad/26ad1f99-1c43-44e0-bc5d-6813d5bcc09e/content/images/size/w1304/format/webp/2026/10/Molly-Greeves--2--1.jpg",
+      "excerpt": "",
+      "badge": "",
+      "badgeType": "investigation"
+    },
+    {
       "publication": "The Independent",
       "title": "‘I lost £100 right before Christmas’: The truth about Vinted’s ‘buyer protection’",
       "date": "16 April 2026",
@@ -58,16 +68,6 @@
       "image": "https://images.ctfassets.net/x1xkqhj4w3lh/dbb6402b-8cd4-4488-bf5f-18e9089e362d/a0b9bf8c755b1c9815fe7951b4ebab3d/hero-homepage-council-tax-house-home-piggy-bank-laptop.jpg?fm=avif&w=734",
       "excerpt": "If you moved home and started paying council tax to a different local authority, you could be one of 808,000 households in England, Scotland and Wales who are owed a share of over £141 million in overpaid council tax, an investigation by MoneySavingExpert.com (MSE) has found.",
       "badge": "Investigation",
-      "badgeType": "investigation"
-    },
-    {
-      "publication": "The Londoner",
-      "title": "How high temperatures and Thames Water delays put an East London pub out of action",
-      "date": "8 Oct 2026",
-      "url": "https://www.the-londoner.co.uk/thames-water-pub-flood-lord-morpeth-heatwaves/",
-      "image": "https://storage.ghost.io/c/26/ad/26ad1f99-1c43-44e0-bc5d-6813d5bcc09e/content/images/size/w1304/format/webp/2026/10/Molly-Greeves--2--1.jpg",
-      "excerpt": "",
-      "badge": "",
       "badgeType": "investigation"
     }
   ],
