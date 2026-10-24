@@ -218,7 +218,7 @@
     if (!meta) return;
 
     if (meta.jobTitle) {
-      document.title = 'Molly Greeves — ' + meta.jobTitle;
+      document.title = 'Molly Greeves - ' + meta.jobTitle;
       var loaderCred = document.querySelector('.loader-credential');
       if (loaderCred) loaderCred.textContent = meta.jobTitle;
       var heroRole = document.querySelector('.hero-role');
